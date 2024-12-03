@@ -43,7 +43,9 @@ stripe listen --forward-to http://localhost:8080/invite/webhook
 
 ### sbt commands
 stagingBuild / Docker / publishLocal
-
 docker save -o server.tar rockthejvm-reviewboard-staging:1.0.1
 scp server.tar root@139.59.146.144:/staging
 docker load -i server.tar
+
+![image](https://github.com/user-attachments/assets/f25c3618-b886-475c-98cb-a9425ec577de)
+![image](https://github.com/user-attachments/assets/9a3cfcfc-29f6-4cf5-9d91-b5f82bb6e42a)
