@@ -1,45 +1,35 @@
-﻿#ZIO Rite of Passage
-This repository is based on the Rock the JVM ZIO Rite of Passage course, showcasing a full-stack application built with ZIO, ScalaJS, Laminar, and related libraries.
+# From the course [Rock the JVM](https://rockthejvm.com/) course [ZIO Rite of Passage](https://rockthejvm.com/courses/enrolled/2132116)
+This project demonstrates a full-stack Scala application using ZIO, Laminar, and Scala.js, focused on building a production-ready system with features like authentication, REST APIs, and real-time updates. The website serves as a platform for reviewing companies, showcasing skills in functional programming and real-world application development.
 
-Setup Instructions
-Backend
-Start the database using Docker:
-docker-compose up -d
-Compile and run the backend:
-sbt ~compile
-Frontend
-Compile the frontend and start the application:
-sbt ~fastOptJS
+### Front End
+sbt: ~fastOptJS
 npm run start
-For macOS M1 Users (Colima + TestContainers)
-Install dependencies:
-brew install --HEAD colima docker docker-compose
-sudo ln -s $HOME/.colima/default/docker.sock /var/run/docker.sock
-Start Colima:
-colima start --cpu 2 --memory 8 --disk 60 --arch aarch64 --vm-type vz --vz-rosetta --mount-type virtiofs --network-address
-Export necessary environment variables:
-export TESTCONTAINERS_HOST_OVERRIDE=$(colima ls -j | jq -r '.address' | head -n 1)
-export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
-export DOCKER_HOST=unix://$HOME/.colima/default/docker.sock
-Create a .env file with the following:
+docker exec -it zio-rite-of-passage-db-1 psql -U docker
+\c reviewboard
+\d invites
 
-DOCKER_HOST=unix://$HOME/.colima/default/docker.sock
-TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
-TESTCONTAINERS_HOST_OVERRIDE=<colima-host>
-Example API Requests
-Create a user:
-http post localhost:8080/users email='user@example.com' password='test'
-Login:
+### Back End
+sbt: ~compile
+sbt: ~Test / compile
+
+
+#### Create a User
+http post localhost:8080/users email='something@something.com' password='test'
+#### Login
 http post localhost:8080/users/login email='user@example.com' password='test'
-Add a company:
+#### Add a Company
 http post localhost:8080/companies name='Company' url='company.com' country='USA' location='City' industry='Tech' tags:='["IT"]' 'Authorization: Bearer <token>'
-Testing and Deploying
-Add sample data using SQL:
-INSERT INTO reviews(...) VALUES(...);
-INSERT INTO invites(...) VALUES(...);
-Test invites and reviews:
-http get localhost:8080/invite/all "Authorization: Bearer <token>"
-http get localhost:8080/reviews/company/1/summary
-Build and deploy Docker image:
-sbt stagingBuild / Docker / publishLocal
-docker save -o server.tar <image-name>:<tag>
+#### Search
+http post localhost:8080/companies/search countries:='["Nepal"]' locations:='[]' industries:='[]' tags:='[]'
+
+
+### Get Stripe secret for local testing of webhook
+stripe listen --forward-to http://localhost:8080/invite/webhook
+<key>
+
+### sbt commands
+stagingBuild / Docker / publishLocal
+
+docker save -o server.tar rockthejvm-reviewboard-staging:1.0.1
+scp server.tar root@139.59.146.144:/staging
+docker load -i server.tar
